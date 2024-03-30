@@ -9,14 +9,17 @@ import Config.config;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import testproject.model.Customer;
+import testproject.service.CustomerService;
 
 /**
  *
  * @author GAUTAMI
  */
 public class Homepage extends javax.swing.JFrame {
+    public Customer c=null;
 
     /**
      * Creates new form Homepage
@@ -24,6 +27,7 @@ public class Homepage extends javax.swing.JFrame {
     public Homepage() {
         initComponents();
         setTableData();
+        new CustomerService().setCustomerMap();
     }
 
     /**
@@ -59,6 +63,11 @@ public class Homepage extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        CustomerTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                CustomerTableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(CustomerTable);
 
         jPanel1.add(jScrollPane1);
@@ -105,6 +114,11 @@ public class Homepage extends javax.swing.JFrame {
         DeleteButton.setFont(new java.awt.Font("Algerian", 1, 14)); // NOI18N
         DeleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/testproject/img/delete_32.png"))); // NOI18N
         DeleteButton.setText("  Delete ");
+        DeleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DeleteButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -156,12 +170,51 @@ public class Homepage extends javax.swing.JFrame {
 
     private void UpdateCustomerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpdateCustomerButtonActionPerformed
         // TODO add your handling code here:
+        if(!(c.equals("null")))
+        {
+            this.dispose();
+            new UpdateCustomer(c).setVisible(true); 
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(this, "Select record to update", "Home page", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_UpdateCustomerButtonActionPerformed
 
     private void AddCustomerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddCustomerButtonActionPerformed
         // TODO add your handling code here:
         new Addcustomer().setVisible(true);
     }//GEN-LAST:event_AddCustomerButtonActionPerformed
+
+    private void CustomerTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_CustomerTableMouseClicked
+        // TODO add your handling code here:
+        try {
+            String id = CustomerTable.getValueAt(CustomerTable.getSelectedRow(), 0).toString();
+            System.out.println("Selected id is => "+id);
+            
+            Customer extractedCustomer = config.CUSTOMERMAP.get(Integer.parseInt(id));
+            c=extractedCustomer;
+            System.out.println("Extracted Customer"+c);   
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        
+    }//GEN-LAST:event_CustomerTableMouseClicked
+
+    private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteButtonActionPerformed
+        // TODO add your handling code here:
+        if(!(c.equals("null")))
+        {
+            String DeleteCustomer = new CustomerService().DeleteCustomer(config.S, c);
+            JOptionPane.showMessageDialog(this, DeleteCustomer, "Home Page", JOptionPane.INFORMATION_MESSAGE);
+            c=null;
+            setTableData();   
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(this, "Please select record for delete", "Home Page", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_DeleteButtonActionPerformed
 
    
 
@@ -178,7 +231,7 @@ public class Homepage extends javax.swing.JFrame {
 public void setTableData()
 {
     try {
-        String[] col= {"SrNo","Address","City","Email","Name","Phoneno","State"};
+        String[] col= {"SrNo","Name","Phoneno","Email","Address","City","State"};
         Connection connection = config.S.connection();
         Statement createStatement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
         ResultSet rs = createStatement.executeQuery("select * from Customer where status=1 ");
@@ -190,7 +243,8 @@ public void setTableData()
         int i =0;
         while(rs.next())
         {
-            data[i][0] = (i+1)+"";
+            data[i][0] = rs.getString("id");
+            
                 data[i][1] = rs.getString("name");
                 data[i][2] = rs.getString("phoneno");
                 data[i][3] = rs.getString("email");

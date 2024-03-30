@@ -5,9 +5,11 @@
  */
 package Config;
 
+import java.util.LinkedHashMap;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import testproject.model.Customer;
 
 
 /**
@@ -19,6 +21,6 @@ public class config {
    public static SessionFactory SF =null;
    public static Session S = null;
    public static Transaction T = null;
-   
+   public static LinkedHashMap<Integer,Customer> CUSTOMERMAP= new LinkedHashMap<>();
     
 }
